@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Image Teller</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/" style="font-size: 2em">Image Teller</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <form enctype="multipart/form-data" action="#" id="search-form">
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Select an image file to generate caption for:</label>
+                    <input class="form-control" type="file" accept=".jpg, .jpeg, .png" id="formFile">
+                </div>
+                <button type="submit" class="btn btn-primary" id="form-submit-button">Submit</button>
+
+                <script>
+                    function readImage(file) {
+                        // Check if the file is an image.
+                        if (file.type && !file.type.startsWith('image/')) {
+                            console.log('File is not an image.', file.type, file);
+                            return;
+                        }
+
+                        const preview = document.getElementById("image");
+                        const reader = new FileReader();
+                        reader.addEventListener('load', (event) => {
+                            const image_binary = reader.result;
+                            const base64_string = image_binary
+                                .replace("data:", "")
+                                .replace()
+                            preview.src = image_binary; //event.target.result;
+                            console.log(image_binary);
+
+                            let formData = new FormData();
+                            formData.append("inputFile", file);
+
+                            // TODO: change fetch URL
+                            // http://localhost:9000/2015-03-31/functions/function/invocations
+                            // https://nbs9zj976d.execute-api.us-west-2.amazonaws.com/default/image-teller
+                            // /caption
+
+                            fetch('/caption', {
+                                method: "POST",
+                                body: formData
+                            })
+                                .then((response) => {
+                                    // console.log(response.json());
+                                    return response.json();
+                                })
+                                .then((responseJSON) => {
+                                    const caption = responseJSON["caption"];
+                                    console.log(caption);
+                                    document.getElementById("image-caption").innerHTML = `<h5>${caption}</h5>`;
+                                });
+
+
+                        });
+                        reader.readAsDataURL(file);
+                    }
+
+                    function handler(submitEvent) {
+                        submitEvent.preventDefault();
+
+                        document.getElementById("image-caption").innerHTML = `
+<h5>Loading...</h5>
+<p>This may take as long as 30 seconds</p>
+`
+                        const inputFile = document.getElementById("formFile").files[0];
+                        readImage(inputFile);
+                    }
+
+                    form = document.getElementById("search-form");
+                    form.addEventListener("submit", handler);
+                </script>
+            </form>
+
+            <section class="my-4">
+                <h2>Image Caption</h2>
+                <div id="image-caption">
+                    <h5>Will appear here</h5>
+                    <p>This may take as long as 30 seconds.</p>
+                </div>
+            </section>
+        </div>
+        <img src="" class="col-12 col-md-6" alt="Selected Image Preview" id="image">
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+<style>
+    nav {
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    #image {
+        border-style: dotted;
+    }
+
+    #image-caption {
+        background-color: aliceblue;
+        margin-left: 20px;
+        padding: 5px;
+    }
+</style>
+
+</html>
